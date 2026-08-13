@@ -20,6 +20,14 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <id>izharatharzi</id>
+            <name>Izhar Atharzi</name>
+            <email>izharat2009@gmail.com</email>
+        </developer>
+    </developers>
+
     <modules>
         <module>supernova</module>
         <module>annotations</module>
