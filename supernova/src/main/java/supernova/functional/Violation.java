@@ -17,16 +17,14 @@ public class Violation {
     public static Violation entityNotFound(Object identity) {
         return Violation.of(
                 "ENTITY_NOT_FOUND",
-                "Entity with identity: " + identity + " is not found",
-                identity
+                "Entity with identity: " + identity + " is not found"
         );
     }
 
     public static Violation entityAlreadyExist(Object identity) {
         return Violation.of(
                 "ENTITY_ALREADY_EXIST",
-                "Entity with identity: " + identity + " already exist",
-                identity
+                "Entity with identity: " + identity + " already exist"
         );
     }
 
@@ -72,7 +70,7 @@ public class Violation {
     private Violation(String code, String message, Object object) {
         this.object = object;
         this.code = Objects.requireNonNullElse(code, "");
-        this.message = message;
+        this.message = Objects.requireNonNullElse(message, "The result is violated");
     }
 
     /**

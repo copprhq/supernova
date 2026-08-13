@@ -26,11 +26,6 @@ public class ResultBuilder<T> {
         return this;
     }
 
-    public ResultBuilder<T> warn(Warning... warnings) {
-        this.warnings.addAll(List.of(warnings));
-        return this;
-    }
-
     public ResultBuilder<T> warn(List<Warning> warnings) {
         this.warnings.addAll(warnings);
         return this;
@@ -38,11 +33,6 @@ public class ResultBuilder<T> {
 
     public ResultBuilder<T> violate(Violation violation) {
         this.violations.add(violation);
-        return this;
-    }
-
-    public ResultBuilder<T> violate(Violation... violations) {
-        this.violations.addAll(List.of(violations));
         return this;
     }
 

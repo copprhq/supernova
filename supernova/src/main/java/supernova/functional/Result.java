@@ -257,9 +257,20 @@ public class Result<T> {
      * @param code the violation code
      * @return {@code true} if there is a violation specified by the code
      */
-    public boolean containsViolation(String code) {
+    public boolean hasViolation(String code) {
         return violations.stream().anyMatch(violation ->
-                violation.getCode().equals(code));
+                Objects.equals(violation.getCode(), code));
+    }
+
+    /**
+     * Checks if the result has warning specified by the warning code.
+     *
+     * @param code the warning code
+     * @return {@code true} if there is a warning specified by the code
+     */
+    public boolean hasWarning(String code) {
+        return warnings.stream().anyMatch(warning ->
+                Objects.equals(warning.code(), code));
     }
 
     /**
@@ -381,9 +392,7 @@ public class Result<T> {
     public String toString() {
         StringJoiner joiner = new StringJoiner(", ", "Result[", "]");
 
-        if (value != null) {
-            joiner.add("value=" + value);
-        }
+        joiner.add("value=" + value);
 
         if (!violations.isEmpty()) {
             joiner.add("violations=" + violations);
