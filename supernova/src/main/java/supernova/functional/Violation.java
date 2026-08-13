@@ -15,6 +15,20 @@ public class Violation {
     private final Object object;
 
     /**
+     * Shared instance for entity not found violation.
+     */
+    public static final Builder ENTITY_NOT_FOUND = Violation.builder()
+            .code("ENTITY_NOT_FOUND")
+            .message("No entity was found");
+
+    /**
+     * Shared instance for entity is already exist violation.
+     */
+    public static final Builder ENTITY_ALREADY_EXIST = Violation.builder()
+            .code("ENTITY_ALREADY_EXIST")
+            .message("Entity is already exist");
+
+    /**
      * Creates violation builder.
      */
     public static Builder builder() {
