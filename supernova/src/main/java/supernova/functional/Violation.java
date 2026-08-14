@@ -14,28 +14,6 @@ public class Violation {
     private final String message;
     private final Object object;
 
-    public static Violation entityNotFound(Object identity) {
-        return Violation.of(
-                "ENTITY_NOT_FOUND",
-                "Entity with identity: " + identity + " is not found"
-        );
-    }
-
-    public static Violation entityAlreadyExist(Object identity) {
-        return Violation.of(
-                "ENTITY_ALREADY_EXIST",
-                "Entity with identity: " + identity + " already exist"
-        );
-    }
-
-    public static Violation conflict(Object object) {
-        return Violation.of(
-                "CONFLICT",
-                "A conflict occurred",
-                object
-        );
-    }
-
     /**
      * Creates violation builder.
      */

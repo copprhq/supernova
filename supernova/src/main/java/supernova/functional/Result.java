@@ -2,6 +2,7 @@ package supernova.functional;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -307,6 +308,48 @@ public class Result<T> {
         }
 
         return this;
+    }
+
+    /**
+     * Recovers a violated result by producing a replacement value from its violations.
+     *
+     * <p>If this result is successful, this method returns the current result unchanged
+     * and the recovery function is not invoked.</p>
+     *
+     * @param recovery the function used to produce a replacement value from the violations
+     * @return this result if successful; otherwise, a successful result containing the
+     *         value produced by the recovery function
+     * @throws NullPointerException if {@code recovery} is {@code null}
+     */
+    public Result<T> recover(Function<? super List<Violation>, ? extends T> recovery) {
+        Objects.requireNonNull(recovery, "recovery");
+
+        if (isSuccessful()) {
+            return this;
+        }
+
+        return Result.successful(recovery.apply(violations));
+    }
+
+    /**
+     * Recovers a violated result by producing a replacement result from its violations.
+     *
+     * <p>If this result is successful, this method returns the current result unchanged
+     * and the recovery function is not invoked.</p>
+     *
+     * @param recovery the function used to produce a replacement result from the violations
+     * @return this result if successful; otherwise, the result produced by the recovery function
+     * @throws NullPointerException if {@code recovery} is {@code null}, or if the recovery
+     *         function returns {@code null}
+     */
+    public Result<T> recoverWith(Function<? super List<Violation>, ? extends Result<T>> recovery) {
+        Objects.requireNonNull(recovery, "recovery");
+
+        if (isSuccessful()) {
+            return this;
+        }
+
+        return Objects.requireNonNull(recovery.apply(violations));
     }
 
     /**
