@@ -1,4 +1,4 @@
-package supernova.functional;
+package com.coppr.supernova.functional;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -24,7 +24,6 @@ import java.util.stream.Stream;
  * @author Izhar Atharzi
  * @since 0.0.1
  */
-@Deprecated
 public class Result<T> {
 
     /**

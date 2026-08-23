@@ -1,4 +1,4 @@
-package supernova.functional;
+package com.coppr.supernova.functional;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 /**
  * Thrown when operation of {@link Result} is violated.
  */
-@Deprecated
 public class ViolatedException extends RuntimeException {
 
     private final Collection<Violation> violations;

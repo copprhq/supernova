@@ -1,4 +1,4 @@
-package supernova.functional;
+package com.coppr.supernova.functional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,6 @@ import java.util.List;
  * @author Izhar Atharzi
  * @since 0.0.1
  */
-@Deprecated
 public class ResultBuilder<T> {
 
     private final List<Violation> violations;

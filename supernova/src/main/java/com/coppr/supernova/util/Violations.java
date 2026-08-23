@@ -1,13 +1,12 @@
-package supernova.util;
+package com.coppr.supernova.util;
 
-import supernova.functional.Violation;
+import com.coppr.supernova.functional.Violation;
 
 /**
  * Utility methods for {@link Violation}.
  *
  * @since 0.0.2
  */
-@Deprecated
 public final class Violations {
 
     private Violations() {

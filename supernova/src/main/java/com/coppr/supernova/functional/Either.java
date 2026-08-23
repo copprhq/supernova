@@ -1,4 +1,4 @@
-package supernova.functional;
+package com.coppr.supernova.functional;
 
 import supernova.annotations.Concept;
 
@@ -18,7 +18,6 @@ import supernova.annotations.Concept;
  * @author Izhar Atharzi
  */
 @Concept
-@Deprecated
 public class Either<L, R> {
 
     /**

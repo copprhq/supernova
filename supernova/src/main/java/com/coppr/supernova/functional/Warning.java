@@ -1,4 +1,4 @@
-package supernova.functional;
+package com.coppr.supernova.functional;
 
 /**
  * Represent object as a warning of {@link Result} that does not affect the operation of the {@link Result} but
@@ -10,7 +10,6 @@ package supernova.functional;
  * @author Izhar Atharzi
  * @since 0.0.1
  */
-@Deprecated
 public record Warning(String code, String message) {
 
     public static Warning of(String code, String message) {
