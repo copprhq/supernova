@@ -1,6 +1,12 @@
 # Violations
-Collection of common violations that may be useful for `Result`
+Collection of common violations that may be useful for `Result`.
 
+**Example Use**
+```java
+public Result<String> get(String name) {
+    return Result.violated(Violations.entityNotFound("John Doe"));
+}
+```
 
 
 ## Entities

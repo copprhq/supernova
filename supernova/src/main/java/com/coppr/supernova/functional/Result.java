@@ -119,18 +119,6 @@ public class Result<T> {
     }
 
     /**
-     * Returns a successful {@link Result} with a value and warnings.
-     *
-     * @param value the object of the value
-     * @param warnings list of warnings
-     * @return a successful {@link Result} with a value and a warning
-     * @param <T> the type of value
-     */
-    public static <T> Result<T> successful(T value, Warning... warnings) {
-        return new Result<>(value, EMPTY_VIOLATIONS, List.of(warnings));
-    }
-
-    /**
      * Returns a successful {@link Result} with a value and list of warnings.
      *
      * @param value the object of the value
@@ -162,16 +150,6 @@ public class Result<T> {
     }
 
     /**
-     * Returns a successful {@link Result} for void type with warnings.
-     *
-     * @param warnings list of warnings
-     * @return a successful {@link Result}
-     */
-    public static Result<Void> successful(Warning... warnings) {
-        return new Result<>(null, EMPTY_VIOLATIONS, List.of(warnings));
-    }
-
-    /**
      * Returns a successful {@link Result} for void type with list of warnings.
      *
      * @param warnings list of warnings
@@ -194,17 +172,6 @@ public class Result<T> {
                 violations,
                 EMPTY_WARNINGS
         );
-    }
-
-    /**
-     * Returns violated {@link Result} with collection of violations.
-     *
-     * @param violations list of violations
-     * @return violated {@link Result} with collection of violations.
-     * @param <T> the type of value
-     */
-    public static <T> Result<T> violated(Violation... violations) {
-        return violated(List.of(violations));
     }
 
     /**

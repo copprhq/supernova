@@ -50,6 +50,13 @@ dependencies {
 
 
 
+## Documentations
+Result have common violations that may be useful which you can read in
+[VIOLATIONS](./docs/VIOLATIONS.md)
+
+
+
+
 ## Important
 
 1.  An API marked with `@Concept` annotation is meant to 

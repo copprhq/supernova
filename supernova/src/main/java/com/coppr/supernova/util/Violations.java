@@ -39,6 +39,27 @@ public final class Violations {
         );
     }
 
+    public static Violation invalidValue(String value, String reason) {
+        return Violation.of(
+                "INVALID_VALUE",
+                "Value \"" + value + "\" is invalid: " + reason
+        );
+    }
+
+    public static Violation missingValue(String value) {
+        return Violation.of(
+                "MISSING_VALUE",
+                "Value " + value + " is missing"
+        );
+    }
+
+    public static Violation valueMismatch(String value) {
+        return Violation.of(
+                "VALUE_MISMATCH",
+                "Value " + value + " mismatch"
+        );
+    }
+
     /**
      * Creates a violation indicating that a conflict occurred.
      *
@@ -49,6 +70,14 @@ public final class Violations {
         return Violation.of(
                 "CONFLICT",
                 "A conflict occurred",
+                object
+        );
+    }
+
+    public static Violation internal(Object object) {
+        return Violation.of(
+                "INTERNAL",
+                "Internal error",
                 object
         );
     }
