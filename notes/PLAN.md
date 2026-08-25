@@ -2,7 +2,7 @@
 
 
 
-## Rename the Supernova package
+## Rename the Supernova package (DONE)
 
 The current package of Supernova is `supernova`. While this package name is
 clean and simple, using a generic top-level package increases the risk of
