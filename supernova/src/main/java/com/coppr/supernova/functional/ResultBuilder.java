@@ -55,6 +55,6 @@ public class ResultBuilder<T> {
     }
 
     public Result<T> build() {
-        return Result.of(value, violations, warnings);
+        return Result.of(value, violations, warnings, null);
     }
 }

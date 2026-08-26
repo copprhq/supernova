@@ -202,8 +202,9 @@ public final class Result<T> {
     /**
      * Creates a result with all the params.
      */
-    public static <T> Result<T> of(T value, List<Violation> violations, List<Warning> warnings) {
-        return new Result<>(value, violations, warnings, null);
+    public static <T> Result<T> of(T value, List<Violation> violations, List<Warning> warnings,
+                                   Throwable interruption) {
+        return new Result<>(value, violations, warnings, interruption);
     }
 
     /**
@@ -271,7 +272,8 @@ public final class Result<T> {
      * perform nothing.
      */
     public Result<T> whenSuccessful(Consumer<? super T> action) {
-        if (violations.isEmpty() && interruption == null) {
+        Objects.requireNonNull(action);
+        if (isSuccessful()) {
             action.accept(value);
         }
 
@@ -283,6 +285,7 @@ public final class Result<T> {
      * perform nothing.
      */
     public Result<T> whenViolated(Consumer<Collection<Violation>> action) {
+        Objects.requireNonNull(action);
         if (!violations.isEmpty()) {
             action.accept(violations);
         }
@@ -295,6 +298,7 @@ public final class Result<T> {
      * perform nothing.
      */
     public Result<T> whenWarning(Consumer<Collection<Warning>> action) {
+        Objects.requireNonNull(action);
         if (!warnings.isEmpty()) {
             action.accept(warnings);
         }
@@ -303,6 +307,7 @@ public final class Result<T> {
     }
 
     public Result<T> whenInterrupted(Consumer<Throwable> action) {
+        Objects.requireNonNull(action);
         if (interruption != null) {
             action.accept(interruption);
         }
@@ -324,15 +329,11 @@ public final class Result<T> {
     public Result<T> recover(Function<? super List<Violation>, ? extends T> recovery) {
         Objects.requireNonNull(recovery, "recovery");
 
-        if (isInterrupted()) {
+        if (isSuccessful() || isInterrupted()) {
             return this;
         }
 
-        if (isSuccessful()) {
-            return this;
-        }
-
-        return Result.successful(recovery.apply(violations));
+        return Result.successful(recovery.apply(violations), warnings);
     }
 
     /**
@@ -348,16 +349,21 @@ public final class Result<T> {
      */
     public Result<T> recoverWith(Function<? super List<Violation>, ? extends Result<T>> recovery) {
         Objects.requireNonNull(recovery, "recovery");
-
-        if (isInterrupted()) {
+        if (isSuccessful() || isInterrupted()) {
             return this;
         }
+        Result<T> recovered = Objects.requireNonNull(recovery.apply(violations));
+        List<Warning> combinedWarnings = mergeWarnings(this.warnings, recovered.warnings);
+        return new Result<>(recovered.value, recovered.violations, combinedWarnings, recovered.interruption);
+    }
 
-        if (isSuccessful()) {
-            return this;
-        }
-
-        return Objects.requireNonNull(recovery.apply(violations));
+    private static List<Warning> mergeWarnings(List<Warning> w1, List<Warning> w2) {
+        if (w1.isEmpty()) return w2;
+        if (w2.isEmpty()) return w1;
+        List<Warning> combined = new ArrayList<>(w1.size() + w2.size());
+        combined.addAll(w1);
+        combined.addAll(w2);
+        return combined;
     }
 
     /**
@@ -365,9 +371,9 @@ public final class Result<T> {
      *
      * @return the instance of the value
      */
-    public T get() throws InterruptedException, ViolatedException {
+    public T get() throws ResultInterruptedException, ViolatedException {
         if (interruption != null) {
-            throw new InterruptedException(interruption);
+            throw new ResultInterruptedException(interruption);
         }
 
         if (!violations.isEmpty()) {
@@ -425,7 +431,7 @@ public final class Result<T> {
      *         non-{@code null}; otherwise an empty stream
      */
     public Stream<T> stream() {
-        return violations.isEmpty() && interruption == null
+        return isSuccessful()
                 ? Stream.ofNullable(value)
                 : Stream.empty();
     }
@@ -435,7 +441,7 @@ public final class Result<T> {
         if (!isSuccessful()) {
             return new Result<>(null, violations, warnings, interruption);
         }
-        return Result.of(mapper.apply(value), EMPTY_VIOLATIONS, warnings);
+        return Result.of(mapper.apply(value), EMPTY_VIOLATIONS, warnings, interruption);
     }
 
     public <U> Result<U> flatMap(Function<? super T, Result<U>> mapper) {
@@ -443,7 +449,9 @@ public final class Result<T> {
         if (!isSuccessful()) {
             return new Result<>(null, violations, warnings, interruption);
         }
-        return Objects.requireNonNull(mapper.apply(value));
+        Result<U> result = Objects.requireNonNull(mapper.apply(value));
+        List<Warning> combinedWarnings = mergeWarnings(this.warnings, result.warnings);
+        return new Result<>(result.value, result.violations, combinedWarnings, result.interruption);
     }
 
     /**
@@ -464,7 +472,7 @@ public final class Result<T> {
         return warnings;
     }
 
-    public Throwable getInterruption() {
+    public Throwable interruption() {
         return interruption;
     }
 
@@ -486,10 +494,6 @@ public final class Result<T> {
 
     @Override
     public String toString() {
-        if (isInterrupted()) {
-            return interruption.toString();
-        }
-
         StringJoiner joiner = new StringJoiner(", ", "Result[", "]");
 
         joiner.add("value=" + value);
@@ -500,6 +504,10 @@ public final class Result<T> {
 
         if (!warnings.isEmpty()) {
             joiner.add("warnings=" + warnings);
+        }
+
+        if (interruption != null) {
+            joiner.add("interruption=" + interruption);
         }
 
         return joiner.toString();
