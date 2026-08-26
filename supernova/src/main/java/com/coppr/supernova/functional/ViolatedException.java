@@ -1,12 +1,14 @@
 package com.coppr.supernova.functional;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
  * Thrown when operation of {@link Result} is violated.
  */
-public class ViolatedException extends RuntimeException {
+public class ViolatedException extends Exception {
 
     private final Collection<Violation> violations;
 
@@ -16,7 +18,7 @@ public class ViolatedException extends RuntimeException {
      * @param violations Collection of violations.
      */
     public ViolatedException(Collection<Violation> violations) {
-        super("Result operation is violated: " + formatViolations(violations));
+        super("Result of an operation is violated with: " + violations);
         this.violations = violations;
     }
 
@@ -29,10 +31,13 @@ public class ViolatedException extends RuntimeException {
         return violations;
     }
 
-    private static String formatViolations(Collection<Violation> violations) {
-        if (violations == null || violations.isEmpty()) return "None";
-        return violations.stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(", ", "[", "]"));
+    private static String toMessages(List<Violation> violations) {
+        StringJoiner stringJoiner = new StringJoiner(", ");
+
+        for (Violation violation : violations) {
+            stringJoiner.add(violation.getCode() + "=" + violation.getMessage());
+        }
+
+        return stringJoiner.toString();
     }
 }

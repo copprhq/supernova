@@ -7,8 +7,8 @@ import java.util.stream.Stream;
 
 /**
  * An immutable container representing the outcome of an operation that may {@code null}able value
- * and contain a zero or more violation. A result that have no violations is stated as successful;
- * otherwise it is stated as violated.
+ * and contain a zero or more violation. A result that have no violations and have no interruption is
+ * stated as successful; otherwise it is stated as violated/interrupted.
  *
  * <p>A result can have interruption where interruption in these terms means error. Which can only
  * contain one interruption. Interruption is used when in a flow of result is interrupted by
@@ -219,7 +219,7 @@ public class Result<T> {
      * @return {@code true} if the result contains no violations.
      */
     public boolean isSuccessful() {
-        return violations.isEmpty();
+        return violations.isEmpty() && interruption == null;
     }
 
     /**
@@ -365,14 +365,15 @@ public class Result<T> {
      *
      * @return the instance of the value
      */
-    public T get() throws Throwable {
+    public T get() throws InterruptedException, ViolatedException {
         if (interruption != null) {
-            throw interruption;
+            throw new InterruptedException(interruption);
         }
 
         if (!violations.isEmpty()) {
             throw new ViolatedException(violations);
         }
+
         return value;
     }
 
@@ -383,7 +384,6 @@ public class Result<T> {
      * If interrupted, the underlying exception is rethrown as an unchecked exception.</p>
      *
      * @return the instance of the value
-     * @throws ViolatedException if the result contains domain violations
      * @throws RuntimeException if the result was interrupted
      */
     public T join() {
@@ -395,7 +395,7 @@ public class Result<T> {
         }
 
         if (!violations.isEmpty()) {
-            throw new ViolatedException(violations);
+            throw new RuntimeException(new ViolatedException(violations));
         }
 
         return value;
@@ -430,6 +430,22 @@ public class Result<T> {
                 : Stream.empty();
     }
 
+    public <U> Result<U> map(Function<? super T, ? extends U> mapper) {
+        Objects.requireNonNull(mapper);
+        if (!isSuccessful()) {
+            return new Result<>(null, violations, warnings, interruption);
+        }
+        return Result.of(mapper.apply(value), EMPTY_VIOLATIONS, warnings);
+    }
+
+    public <U> Result<U> flatMap(Function<? super T, Result<U>> mapper) {
+        Objects.requireNonNull(mapper);
+        if (!isSuccessful()) {
+            return new Result<>(null, violations, warnings, interruption);
+        }
+        return Objects.requireNonNull(mapper.apply(value));
+    }
+
     /**
      * Gets a collection of violations.
      *
@@ -454,21 +470,18 @@ public class Result<T> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (!(obj instanceof Result<?> other)) {
-            return false;
-        }
+        if (this == obj) return true;
+        if (!(obj instanceof Result<?> other)) return false;
 
         return Objects.equals(value, other.value)
-                && Objects.equals(violations, other.violations);
+                && Objects.equals(violations, other.violations)
+                && Objects.equals(warnings, other.warnings)
+                && Objects.equals(interruption, other.interruption);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, violations);
+        return Objects.hash(value, violations, warnings, interruption);
     }
 
     @Override
