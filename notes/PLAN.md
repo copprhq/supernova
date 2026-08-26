@@ -32,4 +32,4 @@ Rename the root package from: `supernova` to: `com.coppr.supernova`
 
 Supernova will use `com.coppr.supernova` as its root package going forward.
 
-## Result's Interruption
+## Result's Interruption (done)

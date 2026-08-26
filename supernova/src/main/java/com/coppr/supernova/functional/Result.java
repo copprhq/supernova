@@ -30,7 +30,7 @@ import java.util.stream.Stream;
  * @author Izhar Atharzi
  * @since 0.0.1
  */
-public class Result<T> {
+public final class Result<T> {
 
     /**
      * Shared instance for empty violation collection.
@@ -271,7 +271,7 @@ public class Result<T> {
      * perform nothing.
      */
     public Result<T> whenSuccessful(Consumer<? super T> action) {
-        if (violations.isEmpty()) {
+        if (violations.isEmpty() && interruption == null) {
             action.accept(value);
         }
 
