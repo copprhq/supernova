@@ -13,24 +13,24 @@ public final class Violations {
         throw new AssertionError("Cannot create supernova.util.Violations instance");
     }
 
-    public static Violation invalidValue(String value, String reason) {
+    public static Violation invalidValue(String valueName, String reason) {
         return Violation.of(
                 "INVALID_VALUE",
-                "Value \"" + value + "\" is invalid: " + reason
+                "Value \"" + valueName + "\" is invalid: " + reason
         );
     }
 
-    public static Violation missingValue(String value) {
+    public static Violation missingValue(String valueName) {
         return Violation.of(
                 "MISSING_VALUE",
-                "Value " + value + " is missing"
+                "Value " + valueName + " is missing"
         );
     }
 
-    public static Violation valueMismatch(String value) {
+    public static Violation valueMismatch(String valueName) {
         return Violation.of(
                 "VALUE_MISMATCH",
-                "Value " + value + " mismatch"
+                "Value " + valueName + " mismatch"
         );
     }
 
