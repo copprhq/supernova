@@ -9,12 +9,6 @@ public Result<String> get(String name) {
 ```
 
 
-## Entities
-
-- ENTITY_NOT_FOUND
-- ENTITY_ALREADY_EXIST
-
-
 
 # Values
 

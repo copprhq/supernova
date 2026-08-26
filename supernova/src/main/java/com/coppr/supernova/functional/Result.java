@@ -6,19 +6,25 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * An immutable container that may or may not contain a {@code null}able value and zero or more violation.
- * A result that have no violations is stated as successful; otherwise it is stated as violated.
+ * An immutable container representing the outcome of an operation that may {@code null}able value
+ * and contain a zero or more violation. A result that have no violations is stated as successful;
+ * otherwise it is stated as violated.
  *
- * <p>A result also can have warnings which don't cause any fatal errors for the operation but is important
- * enough to worth knowing.</p>
+ * <p>A result can have interruption where interruption in these terms means error. Which can only
+ * contain one interruption. Interruption is used when in a flow of result is interrupted by
+ * unrecoverable fail. e.g. {@code DATABASE_TIMEOUT}, {@code CONNECTION_TIMEOUT},
+ * {@code ENTITY_NOT_FOUND}, etc.</p>
  *
- * <p>A violated result is also can be interpreted as failed operation. It has the same meaning as error.
- * but violation will always contain error field and error message.</p>
+ * <p>A result can also have warnings which don't cause any fatal errors for the operation but is
+ * important enough to worth knowing.</p>
  *
- * <p>A successful result may still contain a {@code null} value.</p>
+ * <p>A violated result is also can be interpreted as failed contract from operation.</p>
  *
- * <p>Violation represent as error and can contain any type of object such as string, integer, custom
- * object, etc.</p>
+ * <p>Violation represent as failed contract and can contain any type of object such as string,
+ * integer, custom object, etc.</p>
+ *
+ * <p>You can picture the differences of violation and interruption by: violation is input fault
+ * while interruption is system fault.</p>
  *
  * @param <T> the type of the contained value.
  * @author Izhar Atharzi
@@ -39,7 +45,7 @@ public class Result<T> {
     /**
      * Shared instance for {@code successful()}.
      */
-    private static final Result<Void> EMPTY_SUCCESSFUL = new Result<>(null, EMPTY_VIOLATIONS, EMPTY_WARNINGS);
+    private static final Result<Void> EMPTY_SUCCESSFUL = new Result<>(null, EMPTY_VIOLATIONS, EMPTY_WARNINGS, null);
 
     /**
      * Nullable value which does not trigger anything in result.
@@ -55,6 +61,11 @@ public class Result<T> {
      * Collections of warnings
      */
     private final List<Warning> warnings;
+
+    /**
+     * Interruption of Result.
+     */
+    private final Throwable interruption;
 
     /**
      * A shared helper for creating a singleton list.
@@ -73,7 +84,7 @@ public class Result<T> {
      * @param value the value of the result
      * @param violations collection of violations; if null, it is treated as an empty collection.
      */
-    private Result(T value, List<Violation> violations, List<Warning> warnings) {
+    private Result(T value, List<Violation> violations, List<Warning> warnings, Throwable interruption) {
         this.value = value;
 
         this.violations = violations == null || violations.isEmpty()
@@ -83,6 +94,8 @@ public class Result<T> {
         this.warnings = warnings == null || warnings.isEmpty()
                 ? EMPTY_WARNINGS
                 : List.copyOf(warnings);
+
+        this.interruption = interruption;
     }
 
     /**
@@ -103,7 +116,7 @@ public class Result<T> {
      * @param <T> the type of value
      */
     public static <T> Result<T> successful(T value) {
-        return new Result<>(value, EMPTY_VIOLATIONS, EMPTY_WARNINGS);
+        return new Result<>(value, EMPTY_VIOLATIONS, EMPTY_WARNINGS, null);
     }
 
     /**
@@ -115,7 +128,7 @@ public class Result<T> {
      * @param <T> the type of value
      */
     public static <T> Result<T> successful(T value, Warning warning) {
-        return new Result<>(value, EMPTY_VIOLATIONS, singleton(warning));
+        return new Result<>(value, EMPTY_VIOLATIONS, singleton(warning), null);
     }
 
     /**
@@ -127,7 +140,7 @@ public class Result<T> {
      * @param <T> the type of value
      */
     public static <T> Result<T> successful(T value, List<Warning> warnings) {
-        return new Result<>(value, EMPTY_VIOLATIONS, warnings);
+        return new Result<>(value, EMPTY_VIOLATIONS, warnings, null);
     }
 
     /**
@@ -146,7 +159,7 @@ public class Result<T> {
      * @return a successful {@link Result}
      */
     public static Result<Void> successful(Warning warning) {
-        return new Result<>(null, EMPTY_VIOLATIONS, singleton(warning));
+        return new Result<>(null, EMPTY_VIOLATIONS, singleton(warning), null);
     }
 
     /**
@@ -156,7 +169,7 @@ public class Result<T> {
      * @return a successful {@link Result}
      */
     public static Result<Void> successful(List<Warning> warnings) {
-        return new Result<>(null, EMPTY_VIOLATIONS, warnings);
+        return new Result<>(null, EMPTY_VIOLATIONS, warnings, null);
     }
 
     /**
@@ -170,7 +183,8 @@ public class Result<T> {
         return new Result<>(
                 null,
                 violations,
-                EMPTY_WARNINGS
+                EMPTY_WARNINGS,
+                null
         );
     }
 
@@ -189,7 +203,14 @@ public class Result<T> {
      * Creates a result with all the params.
      */
     public static <T> Result<T> of(T value, List<Violation> violations, List<Warning> warnings) {
-        return new Result<>(value, violations, warnings);
+        return new Result<>(value, violations, warnings, null);
+    }
+
+    /**
+     * Interrupt a result with {@code throwable}.
+     */
+    public static <T> Result<T> interrupted(Throwable interruption) {
+        return new Result<>(null, EMPTY_VIOLATIONS, EMPTY_WARNINGS, interruption);
     }
 
     /**
@@ -217,6 +238,10 @@ public class Result<T> {
      */
     public boolean hasWarning() {
         return !warnings.isEmpty();
+    }
+
+    public boolean isInterrupted() {
+        return interruption != null;
     }
 
     /**
@@ -277,6 +302,14 @@ public class Result<T> {
         return this;
     }
 
+    public Result<T> whenInterrupted(Consumer<Throwable> action) {
+        if (interruption != null) {
+            action.accept(interruption);
+        }
+
+        return this;
+    }
+
     /**
      * Recovers a violated result by producing a replacement value from its violations.
      *
@@ -290,6 +323,10 @@ public class Result<T> {
      */
     public Result<T> recover(Function<? super List<Violation>, ? extends T> recovery) {
         Objects.requireNonNull(recovery, "recovery");
+
+        if (isInterrupted()) {
+            return this;
+        }
 
         if (isSuccessful()) {
             return this;
@@ -312,6 +349,10 @@ public class Result<T> {
     public Result<T> recoverWith(Function<? super List<Violation>, ? extends Result<T>> recovery) {
         Objects.requireNonNull(recovery, "recovery");
 
+        if (isInterrupted()) {
+            return this;
+        }
+
         if (isSuccessful()) {
             return this;
         }
@@ -322,10 +363,13 @@ public class Result<T> {
     /**
      * If the result is successful returns the value.
      *
-     * @throws ViolatedException if the result is violated
      * @return the instance of the value
      */
-    public T get() {
+    public T get() throws Throwable {
+        if (interruption != null) {
+            throw interruption;
+        }
+
         if (!violations.isEmpty()) {
             throw new ViolatedException(violations);
         }
@@ -333,13 +377,38 @@ public class Result<T> {
     }
 
     /**
-     * If the result is successful returns the value, otherwise returns the default value.
+     * Returns the value if successful.
+     *
+     * <p>Unlike {@link #get()}, this method does not declare checked exceptions.
+     * If interrupted, the underlying exception is rethrown as an unchecked exception.</p>
+     *
+     * @return the instance of the value
+     * @throws ViolatedException if the result contains domain violations
+     * @throws RuntimeException if the result was interrupted
+     */
+    public T join() {
+        if (interruption != null) {
+            if (interruption instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
+            throw new RuntimeException(interruption);
+        }
+
+        if (!violations.isEmpty()) {
+            throw new ViolatedException(violations);
+        }
+
+        return value;
+    }
+
+    /**
+     * Returns the value if successful; otherwise returns the default value.
      *
      * @param defaultValue the instance of the default value
-     * @return the value if the result is successful or default value if violated
+     * @return the value if successful, or defaultValue if violated or interrupted
      */
     public T getOrElse(T defaultValue) {
-        if (!violations.isEmpty()) {
+        if (!isSuccessful()) {
             return defaultValue;
         }
         return value;
@@ -356,7 +425,7 @@ public class Result<T> {
      *         non-{@code null}; otherwise an empty stream
      */
     public Stream<T> stream() {
-        return violations.isEmpty()
+        return violations.isEmpty() && interruption == null
                 ? Stream.ofNullable(value)
                 : Stream.empty();
     }
@@ -377,6 +446,10 @@ public class Result<T> {
      */
     public List<Warning> warnings() {
         return warnings;
+    }
+
+    public Throwable getInterruption() {
+        return interruption;
     }
 
     @Override
@@ -400,6 +473,10 @@ public class Result<T> {
 
     @Override
     public String toString() {
+        if (isInterrupted()) {
+            return interruption.toString();
+        }
+
         StringJoiner joiner = new StringJoiner(", ", "Result[", "]");
 
         joiner.add("value=" + value);
