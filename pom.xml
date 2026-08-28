@@ -31,6 +31,7 @@
     <modules>
         <module>supernova</module>
         <module>annotations</module>
+        <module>tests</module>
     </modules>
 
     <properties>

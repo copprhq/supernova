@@ -9,7 +9,7 @@ import java.util.List;
  * @author Izhar Atharzi
  * @since 0.0.1
  */
-public class ResultBuilder<T> {
+public final class ResultBuilder<T> {
 
     private final List<Violation> violations;
     private final List<Warning> warnings;

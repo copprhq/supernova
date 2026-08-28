@@ -18,7 +18,7 @@ public class ViolatedException extends Exception {
      * @param violations Collection of violations.
      */
     public ViolatedException(Collection<Violation> violations) {
-        super("Result of an operation is violated with: " + violations);
+        super("com.supernova.functional.Result of an operation is violated with: " + violations);
         this.violations = violations;
     }
 

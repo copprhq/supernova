@@ -18,7 +18,7 @@ import supernova.annotations.Concept;
  * @author Izhar Atharzi
  */
 @Concept
-public class Either<L, R> {
+public final class Either<L, R> {
 
     /**
      * The left value, or {@code null} when this instance contains a right value.
@@ -40,13 +40,13 @@ public class Either<L, R> {
     private Either(L left, R right) {
         if (left == null && right == null) {
             throw new IllegalStateException(
-                    "supernova.functional.Either can't have both left and right empty"
+                    "com.coppr.supernova.functional.Either can't have both left and right empty"
             );
         }
 
         if (left != null && right != null) {
             throw new IllegalStateException(
-                    "supernova.functional.Either can't have both left and right present"
+                    "com.coppr.supernova.functional.Either can't have both left and right present"
             );
         }
 
